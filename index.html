@@ -8,6 +8,7 @@
         :root {
             --primary: #00d2ff;
             --secondary: #3a7bd5;
+            --danger: #ef4444;
             --bg: #0f172a;
             --card-bg: #1e293b;
             --text: #f8fafc;
@@ -44,14 +45,25 @@
             font-weight: 700;
         }
 
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
         .input-group {
             margin-bottom: 1.2rem;
+        }
+
+        .input-grid .input-group {
+            margin-bottom: 0;
         }
 
         label {
             display: block;
             margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #94a3b8;
         }
 
@@ -72,7 +84,6 @@
             border-color: var(--primary);
         }
 
-        /* New Grid Layout for Results */
         .results-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -95,12 +106,21 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            transition: all 0.3s ease;
         }
 
-        /* Highlight the Annual card */
         .result-card.highlight {
             background: linear-gradient(to right, var(--primary), var(--secondary));
             border: none;
+        }
+
+        /* Class to show if strategy is losing money */
+        .result-card.negative {
+            border-color: var(--danger);
+        }
+        
+        .result-card.highlight.negative {
+            background: linear-gradient(to right, #7f1d1d, #b91c1c);
         }
 
         .result-label {
@@ -132,38 +152,50 @@
         }
     </style>
 </head>
-<body>
+<body onload="calculate()">
 
 <div class="container">
     <h2>Prop Planner</h2>
     
-    <div class="input-group">
-        <label for="avgProfit">Avg. Daily Profit per Account ($)</label>
-        <input type="number" id="avgProfit" placeholder="e.g. 500" oninput="calculate()">
+    <div class="input-grid">
+        <div class="input-group">
+            <label for="avgProfit">Avg. Daily Win ($)</label>
+            <input type="number" id="avgProfit" placeholder="e.g. 500" value="500" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label for="avgLoss">Avg. Daily Loss ($)</label>
+            <input type="number" id="avgLoss" placeholder="e.g. 500" value="500" oninput="calculate()">
+        </div>
     </div>
 
     <div class="input-group">
         <label for="accCount">Number of Accounts</label>
-        <input type="number" id="accCount" placeholder="e.g. 10" oninput="calculate()">
+        <input type="number" id="accCount" placeholder="e.g. 10" value="5" oninput="calculate()">
     </div>
 
-    <div class="input-group">
-        <label for="winRate">Daily Win Rate (%)</label>
-        <input type="number" id="winRate" placeholder="e.g. 60" oninput="calculate()">
+    <div class="input-grid">
+        <div class="input-group">
+            <label for="winRate">Win Rate (%)</label>
+            <input type="number" id="winRate" placeholder="e.g. 60" value="50" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label for="profitSplit">Profit Split (%)</label>
+            <input type="number" id="profitSplit" value="90" oninput="calculate()">
+        </div>
     </div>
 
     <div class="results-grid">
-        <div class="result-card">
-            <div class="result-label">Daily</div>
-            <div class="result-value" id="dailyResult">$0.00</div>
+        <div class="result-card" id="cardDaily">
+            <div class="result-label">Daily Net</div>
+            <div class="result-value" id="dailyResult">$0</div>
         </div>
-        <div class="result-card">
-            <div class="result-label">Monthly</div>
-            <div class="result-value" id="monthlyResult">$0.00</div>
+        <div class="result-card" id="cardMonthly">
+            <div class="result-label">Monthly Net</div>
+            <div class="result-value" id="monthlyResult">$0</div>
         </div>
-        <div class="result-card highlight">
-            <div class="result-label">Annual</div>
-            <div class="result-value" id="annualResult">$0.00</div>
+        <div class="result-card highlight" id="cardAnnual">
+            <div class="result-label">Annual Net</div>
+            <div class="result-value" id="annualResult">$0</div>
         </div>
     </div>
 
@@ -174,33 +206,54 @@
 
 <script>
     function calculate() {
-        // Constants for standard market trading days
         const TRADING_DAYS_MONTH = 21;
         const TRADING_DAYS_YEAR = 252;
 
-        // Get input values
+        // Get inputs
         const profit = parseFloat(document.getElementById('avgProfit').value) || 0;
+        const loss = parseFloat(document.getElementById('avgLoss').value) || 0;
         const accounts = parseFloat(document.getElementById('accCount').value) || 0;
         const winRate = parseFloat(document.getElementById('winRate').value) || 0;
+        const split = parseFloat(document.getElementById('profitSplit').value) || 0;
 
-        // Base daily calculation
-        const dailyTotal = (profit * accounts) * (winRate / 100);
+        // Calculate expected value per single account
+        const lossRate = 100 - winRate;
+        const evPerAccount = (profit * (winRate / 100)) - (loss * (lossRate / 100));
+
+        // Multiply by number of accounts
+        const grossDailyTotal = evPerAccount * accounts;
         
-        // Extended timeframe calculations
-        const monthlyTotal = dailyTotal * TRADING_DAYS_MONTH;
-        const annualTotal = dailyTotal * TRADING_DAYS_YEAR;
+        // Apply profit split only if making money
+        let netDailyTotal = 0;
+        if (grossDailyTotal > 0) {
+            netDailyTotal = grossDailyTotal * (split / 100);
+        } else {
+            netDailyTotal = grossDailyTotal; // You take the full loss
+        }
+        
+        // Extend timeframes
+        const monthlyTotal = netDailyTotal * TRADING_DAYS_MONTH;
+        const annualTotal = netDailyTotal * TRADING_DAYS_YEAR;
 
-        // Currency formatter
+        // Formatter
         const formatter = new Intl.NumberFormat('en-US', { 
             style: 'currency', 
             currency: 'USD',
-            maximumFractionDigits: 0 // Removes decimals for cleaner big numbers
+            maximumFractionDigits: 0 
         });
 
         // Display results
-        document.getElementById('dailyResult').innerText = formatter.format(dailyTotal);
+        document.getElementById('dailyResult').innerText = formatter.format(netDailyTotal);
         document.getElementById('monthlyResult').innerText = formatter.format(monthlyTotal);
         document.getElementById('annualResult').innerText = formatter.format(annualTotal);
+
+        // Visual feedback for negative EV (turn cards red if losing money)
+        const cards = [document.getElementById('cardDaily'), document.getElementById('cardMonthly'), document.getElementById('cardAnnual')];
+        if (netDailyTotal < 0) {
+            cards.forEach(card => card.classList.add('negative'));
+        } else {
+            cards.forEach(card => card.classList.remove('negative'));
+        }
     }
 </script>
 
