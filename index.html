@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prop Firm Account Planner</title>
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .result-card {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 1rem;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-top: 0.5rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Prop Planner</h2>
+    
+    <div class="input-group">
+        <label for="avgProfit">Avg. Daily Profit per Account ($)</label>
+        <input type="number" id="avgProfit" placeholder="e.g. 500" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label for="accCount">Number of Accounts</label>
+        <input type="number" id="accCount" placeholder="e.g. 10" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label for="winRate">Daily Win Rate (%)</label>
+        <input type="number" id="winRate" placeholder="e.g. 60" oninput="calculate()">
+    </div>
+
+    <div class="result-card">
+        <div class="result-label">Est. Daily Portfolio Return</div>
+        <div class="result-value" id="totalResult">$0.00</div>
+    </div>
+
+    <div class="footer">
+        Plan your scale. Manage your risk.
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // Get input values
+        const profit = parseFloat(document.getElementById('avgProfit').value) || 0;
+        const accounts = parseFloat(document.getElementById('accCount').value) || 0;
+        const winRate = parseFloat(document.getElementById('winRate').value) || 0;
+
+        // Formula: (Profit * Accounts) * (WinRate / 100)
+        const total = (profit * accounts) * (winRate / 100);
+
+        // Display result formatted as currency
+        document.getElementById('totalResult').innerText = 
+            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total);
+    }
+</script>
+
+</body>
+</html>
