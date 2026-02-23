@@ -84,11 +84,12 @@
             border-color: var(--primary);
         }
 
+        /* Total Portfolio Results Grid */
         .results-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 1rem;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         @media (min-width: 480px) {
@@ -114,7 +115,6 @@
             border: none;
         }
 
-        /* Class to show if strategy is losing money */
         .result-card.negative {
             border-color: var(--danger);
         }
@@ -142,6 +142,43 @@
 
         .highlight .result-value {
             font-size: 1.5rem;
+        }
+
+        /* New Per Account Section */
+        .per-account-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 0.75rem;
+            text-align: center;
+            border: 1px solid #334155;
+            transition: border-color 0.3s ease;
+        }
+
+        .per-account-section.negative {
+            border-color: var(--danger);
+        }
+
+        .per-account-title {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .per-account-stats {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .per-account-stats strong {
+            color: var(--text);
+            font-weight: 600;
         }
 
         .footer {
@@ -186,16 +223,25 @@
 
     <div class="results-grid">
         <div class="result-card" id="cardDaily">
-            <div class="result-label">Daily Net</div>
+            <div class="result-label">Total Daily</div>
             <div class="result-value" id="dailyResult">$0</div>
         </div>
         <div class="result-card" id="cardMonthly">
-            <div class="result-label">Monthly Net</div>
+            <div class="result-label">Total Monthly</div>
             <div class="result-value" id="monthlyResult">$0</div>
         </div>
         <div class="result-card highlight" id="cardAnnual">
-            <div class="result-label">Annual Net</div>
+            <div class="result-label">Total Annual</div>
             <div class="result-value" id="annualResult">$0</div>
+        </div>
+    </div>
+
+    <div class="per-account-section" id="perAccountSection">
+        <div class="per-account-title">Single Account Net Breakdown</div>
+        <div class="per-account-stats">
+            <span>Daily: <strong id="perAccDaily">$0</strong></span>
+            <span>Monthly: <strong id="perAccMonthly">$0</strong></span>
+            <span>Annual: <strong id="perAccAnnual">$0</strong></span>
         </div>
     </div>
 
@@ -216,24 +262,26 @@
         const winRate = parseFloat(document.getElementById('winRate').value) || 0;
         const split = parseFloat(document.getElementById('profitSplit').value) || 0;
 
-        // Calculate expected value per single account
+        // Calculate expected value (EV) per single account before split
         const lossRate = 100 - winRate;
         const evPerAccount = (profit * (winRate / 100)) - (loss * (lossRate / 100));
 
-        // Multiply by number of accounts
-        const grossDailyTotal = evPerAccount * accounts;
-        
-        // Apply profit split only if making money
-        let netDailyTotal = 0;
-        if (grossDailyTotal > 0) {
-            netDailyTotal = grossDailyTotal * (split / 100);
+        // Calculate Single Account Net (apply profit split only if making money)
+        let netDailyPerAccount = 0;
+        if (evPerAccount > 0) {
+            netDailyPerAccount = evPerAccount * (split / 100);
         } else {
-            netDailyTotal = grossDailyTotal; // You take the full loss
+            netDailyPerAccount = evPerAccount; // You absorb the full loss
         }
-        
-        // Extend timeframes
-        const monthlyTotal = netDailyTotal * TRADING_DAYS_MONTH;
-        const annualTotal = netDailyTotal * TRADING_DAYS_YEAR;
+
+        // Calculate Single Account Extended Timeframes
+        const monthlyPerAccount = netDailyPerAccount * TRADING_DAYS_MONTH;
+        const annualPerAccount = netDailyPerAccount * TRADING_DAYS_YEAR;
+
+        // Calculate Total Portfolio (Net Per Account * Number of Accounts)
+        const netDailyTotal = netDailyPerAccount * accounts;
+        const monthlyTotal = monthlyPerAccount * accounts;
+        const annualTotal = annualPerAccount * accounts;
 
         // Formatter
         const formatter = new Intl.NumberFormat('en-US', { 
@@ -242,17 +290,26 @@
             maximumFractionDigits: 0 
         });
 
-        // Display results
+        // Display Total Results
         document.getElementById('dailyResult').innerText = formatter.format(netDailyTotal);
         document.getElementById('monthlyResult').innerText = formatter.format(monthlyTotal);
         document.getElementById('annualResult').innerText = formatter.format(annualTotal);
 
+        // Display Per Account Results
+        document.getElementById('perAccDaily').innerText = formatter.format(netDailyPerAccount);
+        document.getElementById('perAccMonthly').innerText = formatter.format(monthlyPerAccount);
+        document.getElementById('perAccAnnual').innerText = formatter.format(annualPerAccount);
+
         // Visual feedback for negative EV (turn cards red if losing money)
-        const cards = [document.getElementById('cardDaily'), document.getElementById('cardMonthly'), document.getElementById('cardAnnual')];
+        const totalCards = [document.getElementById('cardDaily'), document.getElementById('cardMonthly'), document.getElementById('cardAnnual')];
+        const perAccountSection = document.getElementById('perAccountSection');
+        
         if (netDailyTotal < 0) {
-            cards.forEach(card => card.classList.add('negative'));
+            totalCards.forEach(card => card.classList.add('negative'));
+            perAccountSection.classList.add('negative');
         } else {
-            cards.forEach(card => card.classList.remove('negative'));
+            totalCards.forEach(card => card.classList.remove('negative'));
+            perAccountSection.classList.remove('negative');
         }
     }
 </script>
