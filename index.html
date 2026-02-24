@@ -38,6 +38,15 @@
             max-width: 500px;
         }
 
+        /* Logo Styling */
+        .logo {
+            display: block;
+            margin: 0 auto 1rem auto;
+            max-width: 80px; 
+            height: auto;
+            border-radius: 50%; 
+        }
+
         h2 {
             text-align: center;
             margin-bottom: 1.5rem;
@@ -47,6 +56,7 @@
             justify-content: center;
             align-items: center;
             gap: 8px;
+            margin-top: 0;
         }
 
         .input-grid {
@@ -357,6 +367,9 @@
 <body onload="calculate()">
 
 <div class="container">
+    
+    <img src="prop-calc-logo.png" alt="Prop Planner Logo" class="logo" id="mainLogo">
+
     <h2>
         Prop Planner 
         <div class="tooltip">?<span class="tooltip-text">Disclaimer: This is a planning tool and does not model firm-specific payout eligibility rules or complex trailing drawdown mechanics.</span></div>
