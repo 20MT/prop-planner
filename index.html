@@ -532,7 +532,7 @@
         const negativeElements = [document.getElementById('cardDaily'), document.getElementById('cardMonthly'), document.getElementById('cardAnnual'), document.getElementById('perAccountSection')];
         negativeElements.forEach(el => netDailyPerAccount < 0 ? el.classList.add('negative') : el.classList.remove('negative'));
 
-        // --- Payout Planner Logic ---
+       // --- Payout Planner Logic ---
         const firstTarget = buffer + firstPayout;
         const netFirstPerAcc = firstPayout * (split / 100);
         const netRecPerAcc = recurringPayout * (split / 100);
@@ -545,18 +545,22 @@
             const daysToFirst = Math.ceil(firstTarget / evPerAccount);
             const daysToRec = Math.ceil(recurringPayout / evPerAccount);
 
-            timeFirstEl.innerText = `${daysToFirst} Trading Days`;
+            // Format First Payout with a line break for Months
+            let firstText = `${daysToFirst} Trading Days`;
             if (daysToFirst >= TRADING_DAYS_MONTH) {
-                timeFirstEl.innerText += ` (${(daysToFirst / TRADING_DAYS_MONTH).toFixed(1)} Months)`;
+                firstText += `<br><span style="font-size: 0.85em; color: #94a3b8; font-weight: normal;">(${(daysToFirst / TRADING_DAYS_MONTH).toFixed(1)} Months)</span>`;
             }
+            timeFirstEl.innerHTML = firstText;
 
-            timeRecEl.innerText = `Every ${daysToRec} Trading Days`;
+            // Format Recurring Payout with a line break for Months
+            let recText = `Every ${daysToRec} Days`;
             if (daysToRec >= TRADING_DAYS_MONTH) {
-                timeRecEl.innerText += ` (${(daysToRec / TRADING_DAYS_MONTH).toFixed(1)} Months)`;
+                recText += `<br><span style="font-size: 0.85em; color: #94a3b8; font-weight: normal;">(${(daysToRec / TRADING_DAYS_MONTH).toFixed(1)} Months)</span>`;
             }
+            timeRecEl.innerHTML = recText;
         } else {
-            timeFirstEl.innerText = "N/A (Losing)";
-            timeRecEl.innerText = "N/A (Losing)";
+            timeFirstEl.innerHTML = "N/A (Losing)";
+            timeRecEl.innerHTML = "N/A (Losing)";
         }
 
         // Display Net payout info
@@ -575,6 +579,7 @@
             riskEl.innerText = "N/A";
         }
     }
+
 </script>
 
 </body>
