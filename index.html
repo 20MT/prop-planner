@@ -298,13 +298,6 @@
             text-align: center;
         }
 
-        .payout-subtext {
-            font-size: 0.75rem;
-            color: var(--primary);
-            margin-top: 0.5rem;
-            font-weight: 600;
-        }
-
         .total-payout-box {
             margin-top: 1rem;
             background: linear-gradient(to right, #1e293b, #0f172a);
@@ -317,18 +310,40 @@
         .payout-split-info {
             display: flex;
             justify-content: space-around;
+            align-items: flex-start;
             flex-wrap: wrap;
             gap: 1rem;
             font-size: 0.85rem;
-            margin-top: 0.5rem;
+            margin-top: 0.8rem;
             color: #cbd5e1;
+        }
+
+        .payout-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .payout-divider {
+            width: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            align-self: stretch;
+            margin: 0 10px;
+        }
+
+        .payout-header {
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.2rem;
         }
 
         .payout-split-info strong {
             color: white;
-            font-size: 1.1rem;
-            display: block;
-            margin-top: 0.2rem;
+            font-size: 1.05rem;
         }
 
         .footer {
@@ -455,20 +470,31 @@
                 <div class="payout-card">
                     <div class="result-label">Time to 1st Payout</div>
                     <div class="result-value" id="timeToFirst" style="font-size: 1.1rem;">0 Trading Days</div>
-                    <div class="payout-subtext" id="firstPayoutAmounts">Net: $0 / acc</div>
                 </div>
                 <div class="payout-card">
                     <div class="result-label">Recurring Frequency</div>
                     <div class="result-value" id="timeToRecurring" style="font-size: 1.1rem;">0 Trading Days</div>
-                    <div class="payout-subtext" id="recurringPayoutAmounts">Net: $0 / acc</div>
                 </div>
             </div>
             
             <div class="total-payout-box">
-                <div class="result-label">Total Portfolio Take-Home (Net)</div>
+                <div class="result-label">Net Take-Home Payouts (After Split)</div>
                 <div class="payout-split-info">
-                    <div>1st Payout Total: <strong id="totalFirstNet">$0</strong></div>
-                    <div>Recurring Total: <strong id="totalRecurringNet">$0</strong></div>
+                    
+                    <div class="payout-column">
+                        <div class="payout-header">1st Payout</div>
+                        <div>Per Acc: <strong id="firstPayoutAmounts">$0</strong></div>
+                        <div>Total: <strong id="totalFirstNet">$0</strong></div>
+                    </div>
+
+                    <div class="payout-divider"></div>
+
+                    <div class="payout-column">
+                        <div class="payout-header">Recurring</div>
+                        <div>Per Acc: <strong id="recurringPayoutAmounts">$0</strong></div>
+                        <div>Total: <strong id="totalRecurringNet">$0</strong></div>
+                    </div>
+
                 </div>
             </div>
 
@@ -532,7 +558,7 @@
         const negativeElements = [document.getElementById('cardDaily'), document.getElementById('cardMonthly'), document.getElementById('cardAnnual'), document.getElementById('perAccountSection')];
         negativeElements.forEach(el => netDailyPerAccount < 0 ? el.classList.add('negative') : el.classList.remove('negative'));
 
-       // --- Payout Planner Logic ---
+        // --- Payout Planner Logic ---
         const firstTarget = buffer + firstPayout;
         const netFirstPerAcc = firstPayout * (split / 100);
         const netRecPerAcc = recurringPayout * (split / 100);
@@ -563,9 +589,9 @@
             timeRecEl.innerHTML = "N/A (Losing)";
         }
 
-        // Display Net payout info
-        document.getElementById('firstPayoutAmounts').innerText = `Net: ${formatter.format(netFirstPerAcc)} / acc`;
-        document.getElementById('recurringPayoutAmounts').innerText = `Net: ${formatter.format(netRecPerAcc)} / acc`;
+        // Update Net payout info inside the new layout
+        document.getElementById('firstPayoutAmounts').innerText = formatter.format(netFirstPerAcc);
+        document.getElementById('recurringPayoutAmounts').innerText = formatter.format(netRecPerAcc);
         
         document.getElementById('totalFirstNet').innerText = formatter.format(netFirstPerAcc * accounts);
         document.getElementById('totalRecurringNet').innerText = formatter.format(netRecPerAcc * accounts);
@@ -579,7 +605,6 @@
             riskEl.innerText = "N/A";
         }
     }
-
 </script>
 
 </body>
