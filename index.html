@@ -41,13 +41,12 @@
             max-width: 500px;
         }
 
-        /* UPDATED: Logo Styling (Removed the circle crop) */
+        /* Logo Styling */
         .logo {
             display: block;
             margin: 0 auto 1rem auto;
             max-width: 80px; 
             height: auto;
-            /* border-radius: 50%; <- This was cutting off your corners, so it's gone! */
         }
 
         h2 {
@@ -364,6 +363,7 @@
             margin-top: 1.5rem;
             font-size: 0.75rem;
             color: #64748b;
+            transition: color 0.3s;
         }
     </style>
 </head>
@@ -395,12 +395,21 @@
         </div>
     </div>
 
-    <div class="input-group">
-        <label for="accCount">
-            Number of Accounts
-            <div class="tooltip">?<span class="tooltip-text">The total number of funded accounts you are trading simultaneously.</span></div>
-        </label>
-        <input type="number" id="accCount" placeholder="e.g. 10" value="5" oninput="calculate()">
+    <div class="input-grid">
+        <div class="input-group">
+            <label for="accCount">
+                Number of Accounts
+                <div class="tooltip">?<span class="tooltip-text">The total number of funded accounts you are trading simultaneously.</span></div>
+            </label>
+            <input type="number" id="accCount" placeholder="e.g. 10" value="5" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label for="tradingDays">
+                Trading Days / Month
+                <div class="tooltip">?<span class="tooltip-text">The average number of days you actively trade per month (max 21).</span></div>
+            </label>
+            <input type="number" id="tradingDays" placeholder="e.g. 21" value="21" max="21" oninput="calculate()">
+        </div>
     </div>
 
     <div class="input-grid">
@@ -517,22 +526,28 @@
             <div class="total-payout-box" style="margin-top: 1rem; border-color: #334155;">
                 <div class="result-label" style="color: #94a3b8;">Risk Management Metric</div>
                 <div class="payout-split-info">
-                    <div>Consecutive Losses to Account Liquidation: <strong id="consecutiveLosses" style="color: var(--danger);">0 Days</strong></div>
+                    <div>Consecutive Losses to Account Liquidation: <strong id="consecutiveLosses" style="color: var(--danger);">0 Trading Days</strong></div>
                 </div>
             </div>
 
         </div>
     </details>
 
-    <div class="footer">
+    <div class="footer" id="dynamicFooter">
         Based on 21 trading days/mo and 252 trading days/yr.
     </div>
 </div>
 
 <script>
     function calculate() {
-        const TRADING_DAYS_MONTH = 21;
-        const TRADING_DAYS_YEAR = 252;
+        // --- Dynamic Time Setup ---
+        // Get the custom days input, but mathematically cap it at 21 so calculations stay grounded
+        let customDays = parseFloat(document.getElementById('tradingDays').value) || 21;
+        const TRADING_DAYS_MONTH = Math.min(customDays, 21);
+        const TRADING_DAYS_YEAR = TRADING_DAYS_MONTH * 12;
+
+        // Update the footer text dynamically
+        document.getElementById('dynamicFooter').innerText = `Based on ${TRADING_DAYS_MONTH} trading days/mo and ${TRADING_DAYS_YEAR} trading days/yr.`;
 
         // --- Core Inputs ---
         const profit = parseFloat(document.getElementById('avgProfit').value) || 0;
@@ -616,7 +631,7 @@
         const riskEl = document.getElementById('consecutiveLosses');
         if (loss > 0 && maxDrawdown > 0) {
             const daysToBlow = Math.floor(maxDrawdown / loss);
-            riskEl.innerText = `${daysToBlow} Days`;
+            riskEl.innerText = `${daysToBlow} Trading Days`;
         } else {
             riskEl.innerText = "N/A";
         }
